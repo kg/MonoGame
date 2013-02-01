@@ -51,9 +51,14 @@ namespace Microsoft.Xna.Framework.Graphics
 {
 	internal class SpriteBatcher
 	{
-#warning Magic numbers? How i set this on my game?        
+#warning Magic numbers? How i set this on my game?      
+#if PSM
+        private const int InitialBatchSize = 1024;
+        private const int InitialVertexArraySize = 1024;
+#else
 		private const int InitialBatchSize = 10000;
 		private const int InitialVertexArraySize = 10000;
+#endif
         
 		List<SpriteBatchItem> _batchItemList;
 		Queue<SpriteBatchItem> _freeBatchItemQueue;
@@ -64,6 +69,11 @@ namespace Microsoft.Xna.Framework.Graphics
         VertexPositionColorTexture[] _vertexArray;
   
         static readonly VertexFormat[] _vertexFormat = new VertexFormat[] { VertexFormat.Float3, VertexFormat.UByte4N, VertexFormat.Float2 };
+        
+#if PSM
+        // FIXME: Make SpriteBatcher IDisposable and dispose this scratch buffer. - kevingadd
+        PssVertexBuffer _scratchVertexBuffer = null;
+#endif
         
 		public SpriteBatcher (GraphicsDevice device)
 		{
@@ -111,6 +121,15 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			return b.Depth.CompareTo(a.Depth);
 		}
+        
+        private PssVertexBuffer GetScratchVertexBuffer () {
+            if (_scratchVertexBuffer == null) {
+                _scratchVertexBuffer = _device.GetVertexBuffer(_vertexFormat, 4 * InitialVertexArraySize, 6 * InitialVertexArraySize);
+                _scratchVertexBuffer.SetIndices(_index, 0, 0, 6 * InitialVertexArraySize);
+            }
+            
+            return _scratchVertexBuffer;
+        }
 		
 		public void DrawBatch ( SpriteSortMode sortMode )
 		{
@@ -155,8 +174,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
             //Get and fill the PssVertexBuffer
-            var vertexBuffer = _device.GetVertexBuffer(_vertexFormat, 4 * InitialVertexArraySize, 6 * InitialVertexArraySize);
-            vertexBuffer.SetIndices(_index, 0, 0, 6 * InitialVertexArraySize);
+            var vertexBuffer = GetScratchVertexBuffer();
             _device._graphics.SetVertexBuffer(0, vertexBuffer);
             vertexBuffer.SetVertices(_vertexArray, 0, 0, index);
                         
@@ -193,6 +211,8 @@ namespace Microsoft.Xna.Framework.Graphics
 			DrawVertexArray(startIndex, index);
 			
 			_batchItemList.Clear();
+            
+            _device._graphics.SetVertexBuffer(0, null);
 		}
 				
 		void ExpandVertexArray( int batchSize )
