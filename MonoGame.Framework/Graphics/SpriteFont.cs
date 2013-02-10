@@ -119,6 +119,8 @@ namespace Microsoft.Xna.Framework.Graphics
         public bool GetGlyph (char ch, out Glyph result) {
             return _glyphs.TryGetValue(ch, out result);
         }
+        
+        public Texture2D Texture { get { return _texture; } }
 
 		private ReadOnlyCollection<char> _characters;
 
