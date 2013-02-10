@@ -202,7 +202,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #elif PSM
 
-        internal GraphicsContext _graphics;
+        public GraphicsContext _graphics;
         internal List<PssVertexBuffer> _availableVertexBuffers = new List<PssVertexBuffer>();
         internal List<PssVertexBuffer> _usedVertexBuffers = new List<PssVertexBuffer>();
 #endif
