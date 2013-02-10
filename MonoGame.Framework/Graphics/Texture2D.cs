@@ -106,7 +106,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		protected int height;
 
 #if PSM
-		internal PssTexture2D _texture2D;
+		public PssTexture2D _texture2D;
 
 #elif OPENGL
 		PixelInternalFormat glInternalFormat;

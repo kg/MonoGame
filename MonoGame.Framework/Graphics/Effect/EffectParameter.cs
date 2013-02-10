@@ -66,6 +66,8 @@ namespace Microsoft.Xna.Framework.Graphics
             // boxing/unboxing so we can just assign it.
             Data = cloneSource.Data;
             StateKey = unchecked(NextStateKey++);
+            
+            InternalSet = cloneSource.InternalSet;
         }
 
 		public string Name { get; private set; }
