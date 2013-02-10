@@ -1476,6 +1476,10 @@ namespace Microsoft.Xna.Framework.Graphics
                 // In OpenGL we have to re-apply the special "posFixup"
                 // vertex shader uniform if the viewport changes.
                 _vertexShaderDirty = true;
+#elif PSM
+                _graphics.SetViewport(
+                    value.X, value.Y, value.Width, value.Height
+                );
 #endif
             }
         }
