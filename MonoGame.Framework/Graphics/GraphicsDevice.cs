@@ -1562,6 +1562,8 @@ namespace Microsoft.Xna.Framework.Graphics
 #elif OPENGL
 				GL.BindFramebuffer(GLFramebuffer, this.glFramebuffer);
                 GraphicsExtensions.CheckGLError();
+#elif PSM
+                _graphics.SetFrameBuffer(_graphics.Screen);
 #endif
 
                 clearTarget = true;
@@ -1635,8 +1637,14 @@ namespace Microsoft.Xna.Framework.Graphics
 					}
 					throw new InvalidOperationException(message);
 				}
-                                
+#elif PSM                                
+                if (renderTargets.Length > 1)
+                    throw new NotImplementedException("No support for multiple render targets");
+                
+                // FIXME: This inverts the Y axis.
+                _graphics.SetFrameBuffer(renderTarget._frameBuffer);
 #endif
+
                 // Set the viewport to the size of the first render target.
                 Viewport = new Viewport(0, 0, renderTarget.Width, renderTarget.Height);
 

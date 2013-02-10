@@ -85,6 +85,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		public bool IsContentLost { get { return false; } }
 		
 		public virtual event EventHandler<EventArgs> ContentLost;
+        
+        public readonly Sce.PlayStation.Core.Graphics.FrameBuffer _frameBuffer;
 		
 		public RenderTarget2D (GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage)
 			:base (graphicsDevice, width, height, mipMap, preferredFormat, true)
@@ -97,10 +99,22 @@ namespace Microsoft.Xna.Framework.Graphics
             // Create a view interface on the rendertarget to use on bind.
             _renderTargetView = new SharpDX.Direct3D11.RenderTargetView(graphicsDevice._d3dDevice, _texture);
 #endif
+            
+#if PSM
+            _frameBuffer = new Sce.PlayStation.Core.Graphics.FrameBuffer();
+            _frameBuffer.SetColorTarget(this._texture2D, 0);
+            
+            if (mipMap)
+                throw new NotImplementedException("Cannot generate mip maps for render targets");
+#endif
 
             // If we don't need a depth buffer then we're done.
             if (preferredDepthFormat == DepthFormat.None)
                 return;
+            
+#if PSM
+            throw new NotImplementedException("Render targets with depth/stencil not supported");
+#endif
 
 #if DIRECTX
 
@@ -194,6 +208,9 @@ namespace Microsoft.Xna.Framework.Graphics
                             GraphicsExtensions.CheckGLError();
                         }
                     });
+#elif PSM
+                if (disposing)
+                    _frameBuffer.Dispose();
 #endif
             }
             base.Dispose(disposing);

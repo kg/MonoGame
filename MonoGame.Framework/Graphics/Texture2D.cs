@@ -170,7 +170,12 @@ namespace Microsoft.Xna.Framework.Graphics
             _texture = new SharpDX.Direct3D11.Texture2D(graphicsDevice._d3dDevice, desc);
 
 #elif PSM
-			_texture2D = new Sce.PlayStation.Core.Graphics.Texture2D(width, height, mipmap, PSSHelper.ToFormat(format));
+			_texture2D = new Sce.PlayStation.Core.Graphics.Texture2D(
+                width, height, mipmap, PSSHelper.ToFormat(format), 
+                renderTarget 
+                    ? Sce.PlayStation.Core.Graphics.PixelBufferOption.Renderable
+                    : Sce.PlayStation.Core.Graphics.PixelBufferOption.None
+            );
 #else
 
             this.glTarget = TextureTarget.Texture2D;
