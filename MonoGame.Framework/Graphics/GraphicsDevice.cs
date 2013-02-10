@@ -1867,7 +1867,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
         public bool ResourcesLost { get; set; }
 
-        internal void ApplyState(bool applyShaders)
+        public void ApplyState(bool applyShaders)
         {
 #if DIRECTX
             // NOTE: This code assumes _d3dContext has been locked by the caller.

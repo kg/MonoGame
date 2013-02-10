@@ -70,7 +70,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _dirty = int.MaxValue;
         }
 
-        internal void SetTextures(GraphicsDevice device)
+        public void SetTextures(GraphicsDevice device)
         {
 #if !DIRECTX
             Threading.EnsureUIThread();
@@ -116,6 +116,13 @@ namespace Microsoft.Xna.Framework.Graphics
                     pixelShaderStage.SetShaderResource(i, null);
                 else
                     pixelShaderStage.SetShaderResource(i, _textures[i].GetShaderResourceView());
+#elif PSM
+                // FIXME: 1d/3d textures
+                var texture2d = _textures[i] as Texture2D;
+                if (texture2d == null)
+                    device._graphics.SetTexture(i, null);
+                else
+                    device._graphics.SetTexture(i, texture2d._texture2D);
 #endif
 
                 _dirty &= ~mask;

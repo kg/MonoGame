@@ -40,6 +40,7 @@
 // 
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 #if OPENGL
 #if MONOMAC
@@ -321,29 +322,40 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #endif // DIRECTX	
 #if PSM
-        internal void ApplyState(GraphicsDevice device)
-        {
-            if (device.BlendState == BlendState.Additive)
-            {
-                device._graphics.Enable(EnableMode.Blend);    
-                device._graphics.SetBlendFunc(BlendFuncMode.Add, BlendFuncFactor.One, BlendFuncFactor.One);
+        static readonly Dictionary<BlendFunction, BlendFuncMode> MapBlendFunction = new Dictionary<BlendFunction, BlendFuncMode> {
+            {BlendFunction.Add,             BlendFuncMode.Add            },
+            {BlendFunction.Subtract,        BlendFuncMode.Subtract       },
+            {BlendFunction.ReverseSubtract, BlendFuncMode.ReverseSubtract}
+        };
+        
+        static readonly Dictionary<Blend, BlendFuncFactor> MapBlend = new Dictionary<Blend, BlendFuncFactor> {
+            {Blend.One,                     BlendFuncFactor.One              },
+            {Blend.Zero,                    BlendFuncFactor.Zero             },
+            {Blend.SourceAlpha,             BlendFuncFactor.SrcAlpha         },
+            {Blend.SourceColor,             BlendFuncFactor.SrcColor         },
+            {Blend.DestinationAlpha,        BlendFuncFactor.DstAlpha         },
+            {Blend.DestinationColor,        BlendFuncFactor.DstColor         },
+            {Blend.InverseSourceAlpha,      BlendFuncFactor.OneMinusSrcAlpha },
+            {Blend.InverseSourceColor,      BlendFuncFactor.OneMinusSrcColor },
+            {Blend.InverseDestinationAlpha, BlendFuncFactor.OneMinusDstAlpha },
+            {Blend.InverseDestinationColor, BlendFuncFactor.OneMinusDstColor },
+        };
+        
+        internal void ApplyState(GraphicsDevice device) {
+            if (this == BlendState.Opaque) {
+                device._graphics.Disable(EnableMode.Blend);
+            } else {
+                device._graphics.Enable(EnableMode.Blend);
+                
+                // FIXME: Alpha blend properties
+                // FIXME: Blend factor
+                
+                device._graphics.SetBlendFunc(
+                    MapBlendFunction[ColorBlendFunction],
+                    MapBlend[ColorSourceBlend], 
+                    MapBlend[ColorDestinationBlend]
+                );
             }
-            else if (device.BlendState == BlendState.AlphaBlend)
-            {
-                device._graphics.Enable(EnableMode.Blend);     
-                device._graphics.SetBlendFunc(BlendFuncMode.Add, BlendFuncFactor.SrcAlpha, BlendFuncFactor.OneMinusSrcAlpha);
-            }
-            else if (device.BlendState == BlendState.NonPremultiplied)
-            {
-                device._graphics.Enable(EnableMode.Blend);     
-                device._graphics.SetBlendFunc(BlendFuncMode.Add, BlendFuncFactor.SrcColor, BlendFuncFactor.OneMinusSrcColor);
-            }
-            else if (device.BlendState == BlendState.Opaque)
-            {
-                device._graphics.Enable(EnableMode.Blend);     
-                device._graphics.SetBlendFunc(BlendFuncMode.Add, BlendFuncFactor.One, BlendFuncFactor.Zero);
-            }
-            else device._graphics.Disable(EnableMode.Blend);           
         }
 #endif
 	}
