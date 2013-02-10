@@ -74,7 +74,6 @@ using System.Text;
 
 namespace Microsoft.Xna.Framework.Graphics 
 {
-
 	public sealed class SpriteFont 
     {
 		static class Errors 
@@ -116,6 +115,10 @@ namespace Microsoft.Xna.Framework.Graphics
 				_glyphs.Add (glyph.Character, glyph);
 			}
 		}
+            
+        public bool GetGlyph (char ch, out Glyph result) {
+            return _glyphs.TryGetValue(ch, out result);
+        }
 
 		private ReadOnlyCollection<char> _characters;
 
@@ -375,7 +378,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 		}
 
-		struct Glyph 
+		public struct Glyph 
         {
 			public char Character;
 			public Rectangle BoundsInTexture;
