@@ -2261,6 +2261,8 @@ namespace Microsoft.Xna.Framework.Graphics
             // Release the handles.
             ibHandle.Free();
             vbHandle.Free();
+#else
+            throw new NotImplementedException("Not implemented");
 #endif
         }
 
@@ -2318,6 +2320,8 @@ namespace Microsoft.Xna.Framework.Graphics
             ibHandle.Free();
             vbHandle.Free();
 
+#else
+            throw new NotImplementedException("Not implemented");
 #endif
         }
 
