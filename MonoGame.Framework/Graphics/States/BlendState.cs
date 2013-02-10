@@ -347,13 +347,18 @@ namespace Microsoft.Xna.Framework.Graphics
             } else {
                 device._graphics.Enable(EnableMode.Blend);
                 
-                // FIXME: Alpha blend properties
                 // FIXME: Blend factor
                 
-                device._graphics.SetBlendFunc(
+                device._graphics.SetBlendFuncRgb(
                     MapBlendFunction[ColorBlendFunction],
                     MapBlend[ColorSourceBlend], 
                     MapBlend[ColorDestinationBlend]
+                );
+                
+                device._graphics.SetBlendFuncAlpha(
+                    MapBlendFunction[AlphaBlendFunction],
+                    MapBlend[AlphaSourceBlend], 
+                    MapBlend[AlphaDestinationBlend]
                 );
             }
         }
