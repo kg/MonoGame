@@ -197,7 +197,9 @@ namespace Microsoft.Xna.Framework
         private Dictionary<int, TouchLocation> _previousTouches = new Dictionary<int, TouchLocation>();
         
         private void UpdateTouches()
-        {           
+        {   
+            // fuck sony
+            return;
             var pssTouches = Touch.GetData(0);
             foreach (var touch in pssTouches)
             {
