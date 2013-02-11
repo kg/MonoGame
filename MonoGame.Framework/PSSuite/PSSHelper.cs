@@ -7,7 +7,7 @@ using PssDrawMode = Sce.PlayStation.Core.Graphics.DrawMode;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-	internal static class PSSHelper
+	public static class PSSHelper
 	{
 		public static PssPixelFormat ToFormat(SurfaceFormat format)
 		{
