@@ -8,7 +8,7 @@ using Sce.PlayStation.Core.Graphics;
 
 namespace Microsoft.Xna.Framework.Graphics
 {
-	internal static class PSSHelper
+	public static class PSSHelper
 	{
 		public static PssPixelFormat ToFormat(SurfaceFormat format)
 		{
