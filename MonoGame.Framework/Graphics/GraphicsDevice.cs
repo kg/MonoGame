@@ -91,6 +91,10 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public class GraphicsDevice : IDisposable
     {
+#if PSM
+        public static GraphicsContext ExistingGraphicsContext = null;
+#endif
+        
         private Viewport _viewport;
 
         private bool _isDisposed;
@@ -425,7 +429,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
 
 #elif PSM
-            _graphics = new GraphicsContext();
+            _graphics = ExistingGraphicsContext ?? new GraphicsContext();
 #elif OPENGL
             _viewport = new Viewport(0, 0, PresentationParameters.BackBufferWidth, PresentationParameters.BackBufferHeight);
 #endif
@@ -1114,6 +1118,15 @@ namespace Microsoft.Xna.Framework.Graphics
             }
 
 #elif PSM
+            // Workaround for MonoGame not setting state correctly
+            _blendStateDirty = true;
+            _depthStencilStateDirty = true;
+            _indexBufferDirty = true;
+            _pixelShaderDirty = true;
+            _vertexShaderDirty = true;
+            _vertexBufferDirty = true;
+            _rasterizerStateDirty = true;
+            _scissorRectangleDirty = true;
 
             _graphics.SetClearColor(color.ToPssVector4());
             _graphics.Clear();
