@@ -542,7 +542,47 @@ namespace Microsoft.Xna.Framework.Graphics
                 throw new NotImplementedException("GetData not implemented for type.");
             }
 #elif PSM
-            throw new NotImplementedException();
+            var rt = (this as RenderTarget2D);
+            
+            if (rt == null)
+                throw new NotImplementedException("Cannot read from textures on PlayStation Mobile, only render targets");
+            
+            if (level != 0)
+                throw new NotImplementedException("Cannot read from mip levels on PlayStation Mobile");
+            
+            if (typeof (T) != typeof(byte))
+                throw new NotImplementedException("PlayStation Mobile only allows reading texture data as bytes");
+            
+            if (rt.RenderTargetUsage != RenderTargetUsage.PreserveContents)
+                throw new NotImplementedException("Cannot recover render target contents on PSM if it is not set to PreserveContents");
+            
+            var g = GraphicsDevice._graphics;
+            var oldFrameBuffer = g.GetFrameBuffer();
+            var oldViewport = g.GetViewport();
+            
+            g.SetFrameBuffer(rt._frameBuffer);
+            Rectangle readRect;
+            
+            if (rect.HasValue)
+                readRect = rect.Value;
+            else
+                readRect = new Rectangle(0, 0, rt.Width, rt.Height);
+            
+            g.SetViewport(readRect.X, readRect.Y, readRect.Width, readRect.Height);
+            
+            try {
+                var dataBytes = data as byte[];
+                
+                // FIXME: Does this even work? It seems like PSM is clearing the render target when we set it as
+                //  the frame buffer, which is pretty worthless given you can't read from Texture/FB instances directly...
+                g.ReadPixels(
+                    dataBytes, Sce.PlayStation.Core.Graphics.PixelFormat.Rgba, 
+                    0, 0, readRect.Width, readRect.Height
+                );
+            } finally {
+                g.SetFrameBuffer(oldFrameBuffer);
+                g.SetViewport(oldViewport);
+            }
 #elif DIRECTX
 
             // Create a temp staging resource for copying the data.
