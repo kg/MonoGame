@@ -86,7 +86,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		
 		public virtual event EventHandler<EventArgs> ContentLost;
         
+#if PSM
         public readonly Sce.PlayStation.Core.Graphics.FrameBuffer _frameBuffer;
+#endif
 		
 		public RenderTarget2D (GraphicsDevice graphicsDevice, int width, int height, bool mipMap, SurfaceFormat preferredFormat, DepthFormat preferredDepthFormat, int preferredMultiSampleCount, RenderTargetUsage usage)
 			:base (graphicsDevice, width, height, mipMap, preferredFormat, true)

@@ -67,7 +67,9 @@ namespace Microsoft.Xna.Framework.Graphics
             Data = cloneSource.Data;
             StateKey = unchecked(NextStateKey++);
             
+#if PSM
             InternalSet = cloneSource.InternalSet;
+#endif
         }
 
 		public string Name { get; private set; }
