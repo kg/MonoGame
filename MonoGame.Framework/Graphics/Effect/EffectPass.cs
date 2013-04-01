@@ -27,7 +27,7 @@ namespace Microsoft.Xna.Framework.Graphics
         public EffectAnnotationCollection Annotations { get; private set; }
 
 #if PSM
-        internal ShaderProgram _shaderProgram;
+        public ShaderProgram _shaderProgram;
 #endif
 
         internal EffectPass(    Effect effect, 

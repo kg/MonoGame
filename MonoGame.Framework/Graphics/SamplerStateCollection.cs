@@ -113,7 +113,7 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
-        internal void SetSamplers(GraphicsDevice device)
+        public void SetSamplers(GraphicsDevice device)
         {
 #if DIRECTX
             // Skip out if nothing has changed.

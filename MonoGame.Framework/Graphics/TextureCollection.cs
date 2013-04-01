@@ -70,7 +70,7 @@ namespace Microsoft.Xna.Framework.Graphics
             _dirty = int.MaxValue;
         }
 
-        internal void SetTextures(GraphicsDevice device)
+        public void SetTextures(GraphicsDevice device)
         {
 #if !DIRECTX
             Threading.EnsureUIThread();

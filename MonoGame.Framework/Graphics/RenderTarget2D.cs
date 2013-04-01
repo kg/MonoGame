@@ -101,7 +101,7 @@ namespace Microsoft.Xna.Framework.Graphics
             // Create a view interface on the rendertarget to use on bind.
             _renderTargetView = new RenderTargetView(graphicsDevice._d3dDevice, _texture);
 #elif PSM
-            _frameBuffer = new FrameBuffer();     
+            _frameBuffer = new FrameBuffer();
             _frameBuffer.SetColorTarget(_texture2D,0);
 #endif
 
