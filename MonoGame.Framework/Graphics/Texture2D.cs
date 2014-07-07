@@ -111,7 +111,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if PSM
 		internal PssTexture2D _texture2D;
-
+        public static System.Collections.Generic.List<Texture2D> EveryPsmTextureEver = new System.Collections.Generic.List<Texture2D>();
 #elif OPENGL
 		PixelInternalFormat glInternalFormat;
 		GLPixelFormat glFormat;
@@ -129,6 +129,23 @@ namespace Microsoft.Xna.Framework.Graphics
         public Texture2D(GraphicsDevice graphicsDevice, int width, int height, bool mipmap, SurfaceFormat format)
             : this(graphicsDevice, width, height, mipmap, format, false)
         {
+        }
+        
+        public void Dispose()
+        {
+           this.Dispose(true); // Dispose of unmanaged resources.
+           GC.SuppressFinalize(this); // Suppress finalization.
+        }
+        protected override void Dispose (bool disposing)
+        {
+            base.Dispose (disposing);
+#if PSM
+            if(_texture2D != null)
+                _texture2D.Dispose(); // Dispose internal PssTexture2D (PSM)
+#endif
+        }
+        ~Texture2D() {
+            this.Dispose( false ); // False indicates it's from finalizer instead of Dispose
         }
 		
 		internal Texture2D(GraphicsDevice graphicsDevice, int width, int height, bool mipmap, SurfaceFormat format, bool renderTarget)
@@ -177,6 +194,7 @@ namespace Microsoft.Xna.Framework.Graphics
             if (renderTarget)
 			    option = PixelBufferOption.Renderable;
              _texture2D = new Sce.PlayStation.Core.Graphics.Texture2D(width, height, mipmap, PSSHelper.ToFormat(format),option);
+            EveryPsmTextureEver.Add(this); // Add to texture tracker
 #else
 
             this.glTarget = TextureTarget.Texture2D;

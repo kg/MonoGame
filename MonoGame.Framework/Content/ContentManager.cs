@@ -206,6 +206,7 @@ namespace Microsoft.Xna.Framework.Content
                 {
                     return (T)asset;
                 }
+                else { throw new Exception("Attempted to Load an asset (with ContentManager) that already exists, but as a different type! This would cause an unmanaged memory leak, so it's not allowed."); }
             }
 
             // Load the asset.
