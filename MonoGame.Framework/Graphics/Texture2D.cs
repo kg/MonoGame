@@ -111,7 +111,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if PSM
 		internal PssTexture2D _texture2D;
-        public static System.Collections.Generic.List<Texture2D> EveryPsmTextureEver = new System.Collections.Generic.List<Texture2D>();
+        //public static System.Collections.Generic.List<Texture2D> EveryPsmTextureEver = new System.Collections.Generic.List<Texture2D>();
 #elif OPENGL
 		PixelInternalFormat glInternalFormat;
 		GLPixelFormat glFormat;
@@ -194,7 +194,7 @@ namespace Microsoft.Xna.Framework.Graphics
             if (renderTarget)
 			    option = PixelBufferOption.Renderable;
              _texture2D = new Sce.PlayStation.Core.Graphics.Texture2D(width, height, mipmap, PSSHelper.ToFormat(format),option);
-            EveryPsmTextureEver.Add(this); // Add to texture tracker
+            //EveryPsmTextureEver.Add(this); // Add to texture tracker
 #else
 
             this.glTarget = TextureTarget.Texture2D;
