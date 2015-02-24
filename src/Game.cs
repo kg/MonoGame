@@ -525,7 +525,6 @@ namespace Microsoft.Xna.Framework
 			{
 				_gameTime.ElapsedGameTime = TargetElapsedTime;
 				int stepCount = 0;
-
 				// Perform as many full fixed length time steps as we can.
 				while (_accumulatedElapsedTime >= TargetElapsedTime)
 				{

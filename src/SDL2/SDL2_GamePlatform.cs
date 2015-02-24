@@ -63,6 +63,12 @@ using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Input.Touch;
+
+#if JSIL
+using JSIL;
+using JSIL.Meta;
+using JSIL.Runtime;
+#endif
 #endregion
 
 namespace Microsoft.Xna.Framework
@@ -261,235 +267,210 @@ namespace Microsoft.Xna.Framework
 
 		#region Public GamePlatform Methods
 
+		public void InnerLoop() {
+			SDL.SDL_Event evt;
+
+#if !THREADED_GL
+			Threading.Run();
+#endif
+			while (SDL.SDL_PollEvent(out evt) == 1) {
+				// Keyboard
+				if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN) {
+#if USE_SCANCODES
+						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
+#else
+					Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
+#endif
+					if (!keys.Contains(key)) {
+						keys.Add(key);
+						INTERNAL_TextInputIn(key);
+					}
+				} else if (evt.type == SDL.SDL_EventType.SDL_KEYUP) {
+#if USE_SCANCODES
+						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
+#else
+					Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
+#endif
+					if (keys.Remove(key)) {
+						INTERNAL_TextInputOut(key);
+					}
+				}
+
+				  // Mouse Input
+				  else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION) {
+					Mouse.INTERNAL_IsWarped = false;
+				} else if (evt.type == SDL.SDL_EventType.SDL_MOUSEWHEEL) {
+					// 120 units per notch. Because reasons.
+					Mouse.INTERNAL_MouseWheel += evt.wheel.y * 120;
+				}
+
+				  // Touch Input
+				  else if (evt.type == SDL.SDL_EventType.SDL_FINGERDOWN) {
+					TouchPanel.AddEvent(
+						(int)evt.tfinger.touchId,
+						TouchLocationState.Pressed,
+						new Vector2(
+							evt.tfinger.x,
+							evt.tfinger.y
+						)
+					);
+				} else if (evt.type == SDL.SDL_EventType.SDL_FINGERUP) {
+					TouchPanel.AddEvent(
+						(int)evt.tfinger.touchId,
+						TouchLocationState.Released,
+						new Vector2(
+							evt.tfinger.x,
+							evt.tfinger.y
+						)
+					);
+				} else if (evt.type == SDL.SDL_EventType.SDL_FINGERMOTION) {
+					TouchPanel.AddEvent(
+						(int)evt.tfinger.touchId,
+						TouchLocationState.Moved,
+						new Vector2(
+							evt.tfinger.x,
+							evt.tfinger.y
+						)
+					);
+				}
+
+				  // Various Window Events...
+				  else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT) {
+					// Window Focus
+					if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED) {
+						IsActive = true;
+
+						if (!INTERNAL_useFullscreenSpaces) {
+							// If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
+							SDL.SDL_SetWindowFullscreen(
+								Window.Handle,
+								Game.GraphicsDevice.PresentationParameters.IsFullScreen ?
+									(uint)SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP :
+									0
+							);
+						}
+
+						// Disable the screensaver when we're back.
+						SDL.SDL_DisableScreenSaver();
+					} else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST) {
+						IsActive = false;
+
+						if (!INTERNAL_useFullscreenSpaces) {
+							SDL.SDL_SetWindowFullscreen(Window.Handle, 0);
+						}
+
+						// Give the screensaver back, we're not that important now.
+						SDL.SDL_EnableScreenSaver();
+					}
+
+					  // Window Resize
+					  else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED) {
+						Mouse.INTERNAL_WindowWidth = evt.window.data1;
+						Mouse.INTERNAL_WindowHeight = evt.window.data2;
+
+						// Should be called on user resize only, NOT ApplyChanges!
+						((SDL2_GameWindow)Window).INTERNAL_ClientSizeChanged();
+					} else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED) {
+						Mouse.INTERNAL_WindowWidth = evt.window.data1;
+						Mouse.INTERNAL_WindowHeight = evt.window.data2;
+
+						// Need to reset the graphics device any time the window size changes
+						if (Game.graphicsDeviceManager.IsFullScreen) {
+							GraphicsDevice device = Game.GraphicsDevice;
+							Game.graphicsDeviceManager.INTERNAL_ResizeGraphicsDevice(
+								device.GLDevice.Backbuffer.Width,
+								device.GLDevice.Backbuffer.Height
+							);
+						} else {
+							Game.graphicsDeviceManager.INTERNAL_ResizeGraphicsDevice(
+								evt.window.data1,
+								evt.window.data2
+							);
+						}
+					}
+
+					  // Window Move
+					  else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_MOVED) {
+						/* Apparently if you move the window to a new
+						 * display, a GraphicsDevice Reset occurs.
+						 * -flibit
+						 */
+						int newIndex = SDL.SDL_GetWindowDisplayIndex(
+							Window.Handle
+						);
+						if (newIndex != displayIndex) {
+							displayIndex = newIndex;
+							INTERNAL_GenerateDisplayModes();
+							Game.GraphicsDevice.Reset();
+						}
+					}
+
+					  // Mouse Focus
+					  else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER) {
+						SDL.SDL_DisableScreenSaver();
+					} else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE) {
+						SDL.SDL_EnableScreenSaver();
+					}
+				}
+
+				  // Controller device management
+				  else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEADDED) {
+					GamePad.INTERNAL_AddInstance(evt.jdevice.which);
+				} else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEREMOVED) {
+					GamePad.INTERNAL_RemoveInstance(evt.jdevice.which);
+				}
+
+				  // Text Input
+				  else if (evt.type == SDL.SDL_EventType.SDL_TEXTINPUT && !INTERNAL_TextInputSuppress) {
+					string text;
+
+					// Based on the SDL2# LPUtf8StrMarshaler
+					unsafe {
+						byte* endPtr = evt.text.text;
+						while (*endPtr != 0) {
+							endPtr++;
+						}
+						byte[] bytes = new byte[endPtr - evt.text.text];
+						Marshal.Copy((IntPtr)evt.text.text, bytes, 0, bytes.Length);
+						text = System.Text.Encoding.UTF8.GetString(bytes);
+					}
+
+					if (text.Length > 0) {
+						TextInputEXT.OnTextInput(text[0]);
+					}
+				}
+
+				  // Quit
+				  else if (evt.type == SDL.SDL_EventType.SDL_QUIT) {
+					INTERNAL_runApplication = false;
+					break;
+				}
+			}
+			// Text Input Controls Key Handling
+			INTERNAL_TextInputUpdate();
+
+			Keyboard.SetKeys(keys);
+			Game.Tick();
+
+#if JSIL           
+			if (INTERNAL_runApplication) {
+				Builtins.Global["requestAnimationFrame"]((Action)InnerLoop);
+			}
+#endif
+		}
+
 		public override void RunLoop()
 		{
 			SDL.SDL_ShowWindow(Window.Handle);
 
-			SDL.SDL_Event evt;
-
+#if JSIL
+			InnerLoop();
+#else
 			while (INTERNAL_runApplication)
 			{
-#if !THREADED_GL
-				Threading.Run();
-#endif
-				while (SDL.SDL_PollEvent(out evt) == 1)
-				{
-					// Keyboard
-					if (evt.type == SDL.SDL_EventType.SDL_KEYDOWN)
-					{
-#if USE_SCANCODES
-						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
-#else
-						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
-#endif
-						if (!keys.Contains(key))
-						{
-							keys.Add(key);
-							INTERNAL_TextInputIn(key);
-						}
-					}
-					else if (evt.type == SDL.SDL_EventType.SDL_KEYUP)
-					{
-#if USE_SCANCODES
-						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.scancode);
-#else
-						Keys key = SDL2_KeyboardUtil.ToXNA(evt.key.keysym.sym);
-#endif
-						if (keys.Remove(key))
-						{
-							INTERNAL_TextInputOut(key);
-						}
-					}
-
-					// Mouse Input
-					else if (evt.type == SDL.SDL_EventType.SDL_MOUSEMOTION)
-					{
-						Mouse.INTERNAL_IsWarped = false;
-					}
-					else if (evt.type == SDL.SDL_EventType.SDL_MOUSEWHEEL)
-					{
-						// 120 units per notch. Because reasons.
-						Mouse.INTERNAL_MouseWheel += evt.wheel.y * 120;
-					}
-
-					// Touch Input
-					else if (evt.type == SDL.SDL_EventType.SDL_FINGERDOWN)
-					{
-						TouchPanel.AddEvent(
-							(int) evt.tfinger.touchId,
-							TouchLocationState.Pressed,
-							new Vector2(
-								evt.tfinger.x,
-								evt.tfinger.y
-							)
-						);
-					}
-					else if (evt.type == SDL.SDL_EventType.SDL_FINGERUP)
-					{
-						TouchPanel.AddEvent(
-							(int) evt.tfinger.touchId,
-							TouchLocationState.Released,
-							new Vector2(
-								evt.tfinger.x,
-								evt.tfinger.y
-							)
-						);
-					}
-					else if (evt.type == SDL.SDL_EventType.SDL_FINGERMOTION)
-					{
-						TouchPanel.AddEvent(
-							(int) evt.tfinger.touchId,
-							TouchLocationState.Moved,
-							new Vector2(
-								evt.tfinger.x,
-								evt.tfinger.y
-							)
-						);
-					}
-
-					// Various Window Events...
-					else if (evt.type == SDL.SDL_EventType.SDL_WINDOWEVENT)
-					{
-						// Window Focus
-						if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_GAINED)
-						{
-							IsActive = true;
-
-							if (!INTERNAL_useFullscreenSpaces)
-							{
-								// If we alt-tab away, we lose the 'fullscreen desktop' flag on some WMs
-								SDL.SDL_SetWindowFullscreen(
-									Window.Handle,
-									Game.GraphicsDevice.PresentationParameters.IsFullScreen ?
-										(uint) SDL.SDL_WindowFlags.SDL_WINDOW_FULLSCREEN_DESKTOP :
-										0
-								);
-							}
-
-							// Disable the screensaver when we're back.
-							SDL.SDL_DisableScreenSaver();
-						}
-						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_FOCUS_LOST)
-						{
-							IsActive = false;
-
-							if (!INTERNAL_useFullscreenSpaces)
-							{
-								SDL.SDL_SetWindowFullscreen(Window.Handle, 0);
-							}
-
-							// Give the screensaver back, we're not that important now.
-							SDL.SDL_EnableScreenSaver();
-						}
-
-						// Window Resize
-						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_RESIZED)
-						{
-							Mouse.INTERNAL_WindowWidth = evt.window.data1;
-							Mouse.INTERNAL_WindowHeight = evt.window.data2;
-
-							// Should be called on user resize only, NOT ApplyChanges!
-							((SDL2_GameWindow) Window).INTERNAL_ClientSizeChanged();
-						}
-						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_SIZE_CHANGED)
-						{
-							Mouse.INTERNAL_WindowWidth = evt.window.data1;
-							Mouse.INTERNAL_WindowHeight = evt.window.data2;
-
-							// Need to reset the graphics device any time the window size changes
-							if (Game.graphicsDeviceManager.IsFullScreen)
-							{
-								GraphicsDevice device = Game.GraphicsDevice;
-								Game.graphicsDeviceManager.INTERNAL_ResizeGraphicsDevice(
-									device.GLDevice.Backbuffer.Width,
-									device.GLDevice.Backbuffer.Height
-								);
-							}
-							else
-							{
-								Game.graphicsDeviceManager.INTERNAL_ResizeGraphicsDevice(
-									evt.window.data1,
-									evt.window.data2
-								);
-							}
-						}
-
-						// Window Move
-						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_MOVED)
-						{
-							/* Apparently if you move the window to a new
-							 * display, a GraphicsDevice Reset occurs.
-							 * -flibit
-							 */
-							int newIndex = SDL.SDL_GetWindowDisplayIndex(
-								Window.Handle
-							);
-							if (newIndex != displayIndex)
-							{
-								displayIndex = newIndex;
-								INTERNAL_GenerateDisplayModes();
-								Game.GraphicsDevice.Reset();
-							}
-						}
-
-						// Mouse Focus
-						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_ENTER)
-						{
-							SDL.SDL_DisableScreenSaver();
-						}
-						else if (evt.window.windowEvent == SDL.SDL_WindowEventID.SDL_WINDOWEVENT_LEAVE)
-						{
-							SDL.SDL_EnableScreenSaver();
-						}
-					}
-
-					// Controller device management
-					else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEADDED)
-					{
-						GamePad.INTERNAL_AddInstance(evt.jdevice.which);
-					}
-					else if (evt.type == SDL.SDL_EventType.SDL_JOYDEVICEREMOVED)
-					{
-						GamePad.INTERNAL_RemoveInstance(evt.jdevice.which);
-					}
-
-					// Text Input
-					else if (evt.type == SDL.SDL_EventType.SDL_TEXTINPUT && !INTERNAL_TextInputSuppress)
-					{
-						string text;
-
-						// Based on the SDL2# LPUtf8StrMarshaler
-						unsafe
-						{
-							byte* endPtr = evt.text.text;
-							while (*endPtr != 0)
-							{
-								endPtr++;
-							}
-							byte[] bytes = new byte[endPtr - evt.text.text];
-							Marshal.Copy((IntPtr) evt.text.text, bytes, 0, bytes.Length);
-							text = System.Text.Encoding.UTF8.GetString(bytes);
-						}
-
-						if (text.Length > 0)
-						{
-							TextInputEXT.OnTextInput(text[0]);
-						}
-					}
-
-					// Quit
-					else if (evt.type == SDL.SDL_EventType.SDL_QUIT)
-					{
-						INTERNAL_runApplication = false;
-						break;
-					}
-				}
-				// Text Input Controls Key Handling
-				INTERNAL_TextInputUpdate();
-
-				Keyboard.SetKeys(keys);
-				Game.Tick();
+				InnerLoop();
 			}
+#endif
 
 			// We out.
 			Game.Exit();
@@ -519,7 +500,7 @@ namespace Microsoft.Xna.Framework
 			}
 
 			// Also, initialize the MonoGameJoystick.cfg file.
-			GamePad.INTERNAL_InitMonoGameJoystick();
+			//GamePad.INTERNAL_InitMonoGameJoystick();
 		}
 
 		public override bool BeforeUpdate(GameTime gameTime)
