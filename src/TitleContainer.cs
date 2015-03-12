@@ -32,7 +32,11 @@ namespace Microsoft.Xna.Framework
 
 		static TitleContainer()
 		{
+#if JSIL
+            Location = "/bin/JSIL/";
+#else
 			Location = AppDomain.CurrentDomain.BaseDirectory;
+#endif
 		}
 
 		#endregion
