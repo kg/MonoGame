@@ -13,6 +13,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 
 using SDL2;
+#if JSIL
+using JSIL;
+#endif
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -185,11 +188,12 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			Threading.ForceToMainThread(() =>
 			{
+                int elementSizeInBytes = Marshal.SizeOf(typeof(T));
+                int startByte = startIndex * elementSizeInBytes;
+#if !JSIL
 				GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-				int elementSizeInBytes = Marshal.SizeOf(typeof(T));
-				int startByte = startIndex * elementSizeInBytes;
 				IntPtr dataPtr = (IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startByte);
-
+#endif
 				try
 				{
 					GraphicsDevice.GLDevice.BindTexture(texture);
@@ -211,6 +215,21 @@ namespace Microsoft.Xna.Framework.Graphics
 						 * compressed textures.
 						 * -flibit
 						 */
+#if JSIL
+                        dynamic Document = Builtins.Global["document"];
+                        dynamic Canvas = Document.getElementById("canvas");
+                        dynamic gl = Canvas.getContext("webgl");
+                        gl.compressedTexSubImage2D(
+                            OpenGLDevice.GLenum.GL_TEXTURE_2D,
+                            level,
+                            x,
+                            y,
+                            w,
+                            h,
+                            glInternalFormat,
+                            data
+                        );
+#else
 						GraphicsDevice.GLDevice.glCompressedTexSubImage2D(
 							OpenGLDevice.GLenum.GL_TEXTURE_2D,
 							level,
@@ -222,7 +241,8 @@ namespace Microsoft.Xna.Framework.Graphics
 							dataLength,
 							dataPtr
 						);
-					}
+#endif
+                    }
 					else
 					{
 						// Set pixel alignment to match texel size in bytes
@@ -235,6 +255,22 @@ namespace Microsoft.Xna.Framework.Graphics
 							);
 						}
 
+#if JSIL
+                        dynamic Document = Builtins.Global["document"];
+                        dynamic Canvas = Document.getElementById("canvas");
+                        dynamic gl = Canvas.getContext("webgl");
+                        gl.texSubImage2D(
+                            OpenGLDevice.GLenum.GL_TEXTURE_2D,
+                            level,
+                            x,
+                            y,
+                            w,
+                            h,
+                            glFormat,
+                            glType,
+                            data
+                        );
+#else
 						GraphicsDevice.GLDevice.glTexSubImage2D(
 							OpenGLDevice.GLenum.GL_TEXTURE_2D,
 							level,
@@ -246,6 +282,7 @@ namespace Microsoft.Xna.Framework.Graphics
 							glType,
 							dataPtr
 						);
+#endif
 
 						// Keep this state sane -flibit
 						if (packSize != 4)
@@ -259,7 +296,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				}
 				finally
 				{
-					dataHandle.Free();
+#if !JSIL
+                    dataHandle.Free();
+#endif
 				}
 			});
 		}
