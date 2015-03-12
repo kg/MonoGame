@@ -44,6 +44,10 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 using SDL2;
+
+#if JSIL
+using JSIL;
+#endif
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
@@ -1240,6 +1244,12 @@ namespace Microsoft.Xna.Framework.Graphics
 			int elementCount,
 			SetDataOptions options
 		) where T : struct {
+#if JSIL
+            dynamic Document = Builtins.Global["document"];
+            dynamic Canvas = Document.getElementById("canvas");
+            dynamic gl = Canvas.getContext("webgl");
+            gl.bufferSubData(gl.ARRAY_BUFFER, offsetInBytes, data);
+#else
 			BindVertexBuffer(handle);
 
 			if (options == SetDataOptions.Discard)
@@ -1253,7 +1263,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
-
 			glBufferSubData(
 				GLenum.GL_ARRAY_BUFFER,
 				(IntPtr) offsetInBytes,
@@ -1261,8 +1270,10 @@ namespace Microsoft.Xna.Framework.Graphics
 				(IntPtr) (dataHandle.AddrOfPinnedObject().ToInt64() + startIndex * elementSizeInBytes)
 			);
 
-			dataHandle.Free();
-		}
+			dataHandle.Free();            
+#endif
+        }
+
 
 		public void SetIndexBufferData<T>(
 			OpenGLIndexBuffer handle,
@@ -1272,6 +1283,12 @@ namespace Microsoft.Xna.Framework.Graphics
 			int elementCount,
 			SetDataOptions options
 		) where T : struct {
+#if JSIL
+            dynamic Document = Builtins.Global["document"];
+            dynamic Canvas = Document.getElementById("canvas");
+            dynamic gl = Canvas.getContext("webgl");
+            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, offsetInBytes, data);
+#else
 			BindIndexBuffer(handle);
 
 			if (options == SetDataOptions.Discard)
@@ -1295,6 +1312,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			);
 
 			dataHandle.Free();
+#endif
 		}
 
 		#endregion

@@ -67,7 +67,6 @@ using Microsoft.Xna.Framework.Input.Touch;
 #if JSIL
 using JSIL;
 using JSIL.Meta;
-using JSIL.Runtime;
 #endif
 #endregion
 
@@ -164,7 +163,6 @@ namespace Microsoft.Xna.Framework
 		#endregion
 
 		#region Private DisplayMode Variables
-
 		private int displayIndex = 0;
 		private DisplayModeCollection supportedDisplayModes = null;
 
