@@ -47,6 +47,8 @@ using SDL2;
 
 #if JSIL
 using JSIL;
+using JSIL.Meta;
+using JSIL.Runtime;
 #endif
 #endregion
 
@@ -1235,6 +1237,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region glSetBufferData Methods
 
+#if JSIL
+        [JSAllowPackedArrayArguments]
+#endif
 		public void SetVertexBufferData<T>(
 			OpenGLVertexBuffer handle,
 			int elementSizeInBytes,
@@ -1248,9 +1253,9 @@ namespace Microsoft.Xna.Framework.Graphics
             dynamic Document = Builtins.Global["document"];
             dynamic Canvas = Document.getElementById("canvas");
             dynamic gl = Canvas.getContext("webgl");
-            gl.bufferSubData(gl.ARRAY_BUFFER, offsetInBytes, data);
+            gl.bufferSubData(gl.ARRAY_BUFFER, offsetInBytes, JSILHelpers.GetBytes(data));
 #else
-			BindVertexBuffer(handle);
+            BindVertexBuffer(handle);
 
 			if (options == SetDataOptions.Discard)
 			{
@@ -1274,7 +1279,9 @@ namespace Microsoft.Xna.Framework.Graphics
 #endif
         }
 
-
+#if JSIL
+        [JSAllowPackedArrayArguments]
+#endif
 		public void SetIndexBufferData<T>(
 			OpenGLIndexBuffer handle,
 			int offsetInBytes,
@@ -1287,7 +1294,7 @@ namespace Microsoft.Xna.Framework.Graphics
             dynamic Document = Builtins.Global["document"];
             dynamic Canvas = Document.getElementById("canvas");
             dynamic gl = Canvas.getContext("webgl");
-            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, offsetInBytes, data);
+            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, offsetInBytes, JSILHelpers.GetBytes(data));
 #else
 			BindIndexBuffer(handle);
 
@@ -1319,6 +1326,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region glGetBufferData Methods
 
+#if JSIL
+        [JSAllowPackedArrayArguments]
+#endif
 		public void GetVertexBufferData<T>(
 			OpenGLVertexBuffer handle,
 			int offsetInBytes,
@@ -1375,6 +1385,9 @@ namespace Microsoft.Xna.Framework.Graphics
 			glUnmapBuffer(GLenum.GL_ARRAY_BUFFER);
 		}
 
+#if JSIL
+        [JSAllowPackedArrayArguments]
+#endif
 		public void GetIndexBufferData<T>(
 			OpenGLIndexBuffer handle,
 			int offsetInBytes,

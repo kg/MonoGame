@@ -61,6 +61,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Compile Include="JSILHelpers.cs" />
     <Compile Include="src\Content\ContentReaders\Texture3DReader.cs" />
     <Compile Include="src\Graphics\IRenderTarget.cs" />
     <Compile Include="src\Graphics\RenderTargetCube.cs" />

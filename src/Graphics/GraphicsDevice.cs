@@ -11,6 +11,9 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+#if JSIL
+using JSIL.Meta;
+#endif
 #endregion
 
 namespace Microsoft.Xna.Framework.Graphics
