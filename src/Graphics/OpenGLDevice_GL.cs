@@ -762,8 +762,8 @@ namespace Microsoft.Xna.Framework.Graphics
 		public delegate void ShaderSource(
 			uint shader,
 			int count,
-			ref string source,
-			ref int length
+			string[] source,
+			int[] length
 		);
 		public ShaderSource glShaderSource;
 

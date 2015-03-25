@@ -48,19 +48,17 @@ namespace Microsoft.Xna.Framework.Graphics
             if (_shaderHandle != 0)
                 return _shaderHandle;
             
-            //
             _shaderHandle = GraphicsDevice.GLDevice.glCreateShader(Stage == ShaderStage.Vertex ? OpenGLDevice.GLenum.GL_VERTEX_SHADER : OpenGLDevice.GLenum.GL_FRAGMENT_SHADER);
-            int len = _glslCode.Length;
-            GraphicsDevice.GLDevice.glShaderSource(_shaderHandle, 1, ref _glslCode, ref len);
+            GraphicsDevice.GLDevice.glShaderSource(_shaderHandle, 1, new string[] { _glslCode }, new int[] { _glslCode.Length });
             GraphicsDevice.GLDevice.glCompileShader(_shaderHandle);
 
             var compiled = 0;
             GraphicsDevice.GLDevice.glGetShaderiv(_shaderHandle, OpenGLDevice.GLenum.GL_COMPILE_STATUS, out compiled);
             if (compiled == 0)
             {
-                Console.WriteLine(
-                    GraphicsDevice.GLDevice.glGetShaderInfoLog(_shaderHandle)
-                );
+                //Console.WriteLine(
+                //    GraphicsDevice.GLDevice.glGetShaderInfoLog(_shaderHandle)
+                //);
 
                 if (GraphicsDevice.GLDevice.glIsShader(_shaderHandle))
                 {

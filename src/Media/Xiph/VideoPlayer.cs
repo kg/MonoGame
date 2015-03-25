@@ -121,23 +121,21 @@ namespace Microsoft.Xna.Framework.Media
 			uint vshader_id = currentDevice.GLDevice.glCreateShader(
 				OpenGLDevice.GLenum.GL_VERTEX_SHADER
 			);
-			int len = shader_vertex.Length;
 			currentDevice.GLDevice.glShaderSource(
 				vshader_id,
 				1,
-				ref shader_vertex,
-				ref len
+				new string[] { shader_vertex },
+                new int[] { shader_vertex.Length }
 			);
 			currentDevice.GLDevice.glCompileShader(vshader_id);
 			uint fshader_id = currentDevice.GLDevice.glCreateShader(
 				OpenGLDevice.GLenum.GL_FRAGMENT_SHADER
 			);
-			len = shader_fragment.Length;
 			currentDevice.GLDevice.glShaderSource(
 				fshader_id,
 				1,
-				ref shader_fragment,
-				ref len
+			    new string[] { shader_fragment },
+                new int[] { shader_fragment.Length }
 			);
 			currentDevice.GLDevice.glCompileShader(fshader_id);
 
