@@ -3,6 +3,9 @@
 // file 'LICENSE.txt', which is part of this source code package.
 
 using System;
+#if JSIL
+using JSIL.Meta;
+#endif 
 
 namespace Microsoft.Xna.Framework.Graphics
 {

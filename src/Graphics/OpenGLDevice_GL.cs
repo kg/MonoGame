@@ -709,6 +709,14 @@ namespace Microsoft.Xna.Framework.Graphics
 		);
 		public DrawElementsInstanced glDrawElementsInstanced;
 
+        public delegate void DrawElements(
+            GLenum mode,
+            int count,
+            GLenum type,
+            int indices
+        );
+        public DrawElements glDrawElements;
+
 		public delegate void DrawRangeElements(
 			GLenum mode,
 			int start,
@@ -794,7 +802,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		public delegate void Uniform4fv(
 			int location,
 			int count,
-			IntPtr value
+			float[] value
 		);
 		public Uniform4fv glUniform4fv;
 
@@ -1131,6 +1139,10 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glReadPixels"),
 					typeof(ReadPixels)
 				);
+                glDrawElements = (DrawElements)Marshal.GetDelegateForFunctionPointer(
+                    SDL.SDL_GL_GetProcAddress("glDrawElements"),
+                    typeof(DrawElements)
+                );
 				glDrawRangeElements = (DrawRangeElements) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glDrawRangeElements"),
 					typeof(DrawRangeElements)

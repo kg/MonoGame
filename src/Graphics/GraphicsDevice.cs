@@ -961,15 +961,15 @@ namespace Microsoft.Xna.Framework.Graphics
 			GLDevice.BindIndexBuffer(Indices.Handle);
 
 			// Draw!
-			GLDevice.glDrawRangeElements(
+			GLDevice.glDrawElements(
 				PrimitiveTypeGL(primitiveType),
-				minVertexIndex,
-				minVertexIndex + numVertices - 1,
+				//minVertexIndex,
+				//minVertexIndex + numVertices - 1,
 				GetElementCountArray(primitiveType, primitiveCount),
 				shortIndices ?
 					OpenGLDevice.GLenum.GL_UNSIGNED_SHORT :
 					OpenGLDevice.GLenum.GL_UNSIGNED_INT,
-				(IntPtr) (startIndex * (shortIndices ? 2 : 4))
+				(startIndex * (shortIndices ? 2 : 4))
 			);
 		}
 
@@ -1415,7 +1415,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			GLDevice.glUniform4fv(
 				posFixupLoc,
 				1,
-				posFixupPtr
+				posFixup
 			);
 		}
 
