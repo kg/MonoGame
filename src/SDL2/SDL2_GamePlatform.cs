@@ -453,7 +453,9 @@ namespace Microsoft.Xna.Framework
 #if JSIL           
 			if (INTERNAL_runApplication) {
 				Builtins.Global["requestAnimationFrame"]((Action)InnerLoop);
-			}
+            } else {
+                Game.Exit();
+            }
 #endif
 		}
 
@@ -468,11 +470,11 @@ namespace Microsoft.Xna.Framework
 			{
 				InnerLoop();
 			}
-#endif
 
 			// We out.
 			Game.Exit();
-		}
+#endif
+        }
 
 		public override void Exit()
 		{
