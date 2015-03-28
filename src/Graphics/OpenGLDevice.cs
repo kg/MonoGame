@@ -1067,6 +1067,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (sampler.AddressU != texture.texture.WrapS)
 			{
 				texture.texture.WrapS = sampler.AddressU;
+                Console.WriteLine("GL_TEXTURE_WRAP_S");
 				glTexParameteri(
 					texture.texture.Target,
 					GLenum.GL_TEXTURE_WRAP_S,
@@ -1076,12 +1077,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (sampler.AddressV != texture.texture.WrapT)
 			{
 				texture.texture.WrapT = sampler.AddressV;
+                Console.WriteLine("GL_TEXTURE_WRAP_T");
 				glTexParameteri(
 					texture.texture.Target,
 					GLenum.GL_TEXTURE_WRAP_T,
 					(int) XNAToGL.Wrap[texture.texture.WrapT]
 				);
 			}
+#if !JSIL
 			if (sampler.AddressW != texture.texture.WrapR)
 			{
 				texture.texture.WrapR = sampler.AddressW;
@@ -1091,6 +1094,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					(int) XNAToGL.Wrap[texture.texture.WrapR]
 				);
 			}
+#endif
 			if (	sampler.Filter != texture.texture.Filter ||
 				sampler.MaxAnisotropy != texture.texture.Anistropy	)
 			{
@@ -1121,12 +1125,14 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (sampler.MaxMipLevel != texture.texture.MaxMipmapLevel)
 			{
 				texture.texture.MaxMipmapLevel = sampler.MaxMipLevel;
+                Console.WriteLine("GL_TEXTURE_BASE_LEVEL");
 				glTexParameteri(
 					texture.texture.Target,
 					GLenum.GL_TEXTURE_BASE_LEVEL,
 					texture.texture.MaxMipmapLevel
 				);
 			}
+#if !JSIL
 			if (sampler.MipMapLevelOfDetailBias != texture.texture.LODBias)
 			{
 				texture.texture.LODBias = sampler.MipMapLevelOfDetailBias;
@@ -1136,6 +1142,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					texture.texture.LODBias
 				);
 			}
+#endif
 
 			if (index != 0)
 			{
@@ -1294,7 +1301,7 @@ namespace Microsoft.Xna.Framework.Graphics
             dynamic Document = Builtins.Global["document"];
             dynamic Canvas = Document.getElementById("canvas");
             dynamic gl = Canvas.getContext("webgl");
-            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, offsetInBytes, JSILHelpers.GetBytes(data));
+            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, offsetInBytes, data);
 #else
 			BindIndexBuffer(handle);
 
@@ -1462,46 +1469,58 @@ namespace Microsoft.Xna.Framework.Graphics
 				hasMipmaps
 			);
 			BindTexture(result);
+            Console.WriteLine("GL_TEXTURE_WRAP_S");
 			glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_WRAP_S,
 				(int) XNAToGL.Wrap[result.WrapS]
 			);
+            Console.WriteLine("GL_TEXTURE_WRAP_T");
 			glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_WRAP_T,
 				(int) XNAToGL.Wrap[result.WrapT]
 			);
-			glTexParameteri(
+
+#if !JSIL
+            glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_WRAP_R,
 				(int) XNAToGL.Wrap[result.WrapR]
 			);
-			glTexParameteri(
+#endif
+            Console.WriteLine("GL_TEXTURE_MAG_FILTER");
+            glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_MAG_FILTER,
 				(int) XNAToGL.MagFilter[result.Filter]
 			);
+            Console.WriteLine("GL_TEXTURE_MIN_FILTER");
 			glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_MIN_FILTER,
 				(int) (result.HasMipmaps ? XNAToGL.MinMipFilter[result.Filter] : XNAToGL.MinFilter[result.Filter])
 			);
+            Console.WriteLine("GL_TEXTURE_MAX_ANISOTROPY_EXT");
 			glTexParameterf(
 				result.Target,
 				GLenum.GL_TEXTURE_MAX_ANISOTROPY_EXT,
 				(result.Filter == TextureFilter.Anisotropic) ? Math.Max(result.Anistropy, 1.0f) : 1.0f
 			);
+#if !JSIL
 			glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_BASE_LEVEL,
 				result.MaxMipmapLevel
 			);
-			glTexParameterf(
+
+            glTexParameterf(
 				result.Target,
 				GLenum.GL_TEXTURE_LOD_BIAS,
 				result.LODBias
 			);
+#endif
+
 			return result;
 		}
 

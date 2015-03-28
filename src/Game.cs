@@ -261,7 +261,7 @@ namespace Microsoft.Xna.Framework
 		private IGraphicsDeviceService _graphicsDeviceService;
 
 		private bool _initialized = false;
-		private bool _isFixedTimeStep = true;
+		private bool _isFixedTimeStep = false;
 
 		private TimeSpan _targetElapsedTime = TimeSpan.FromTicks(166667); // 60fps
 

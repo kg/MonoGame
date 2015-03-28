@@ -1007,10 +1007,10 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glFrontFace"),
 					typeof(FrontFace)
 				);
-				glPolygonMode = (PolygonMode) Marshal.GetDelegateForFunctionPointer(
+				/*glPolygonMode = (PolygonMode) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glPolygonMode"),
 					typeof(PolygonMode)
-				);
+				);*/
 				glPolygonOffset = (PolygonOffset) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glPolygonOffset"),
 					typeof(PolygonOffset)
