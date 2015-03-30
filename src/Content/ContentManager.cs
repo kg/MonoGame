@@ -71,7 +71,7 @@ namespace Microsoft.Xna.Framework.Content
 		private bool disposed;
 
 		private static object ContentManagerLock = new object();
-		private static List<WeakReference> ContentManagers = new List<WeakReference>();
+		private static List<ContentManager> ContentManagers = new List<ContentManager>();
 
 		private static List<char> targetPlatformIdentifiers = new List<char>()
 		{
@@ -106,19 +106,14 @@ namespace Microsoft.Xna.Framework.Content
 				bool contains = false;
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
-					WeakReference contentRef = ContentManagers[i];
-					if (Object.ReferenceEquals(contentRef.Target, contentManager))
+					if (Object.ReferenceEquals(ContentManagers[i], contentManager))
 					{
 						contains = true;
-					}
-					if (!contentRef.IsAlive)
-					{
-						ContentManagers.RemoveAt(i);
-					}
+					}					
 				}
 				if (!contains)
 				{
-					ContentManagers.Add(new WeakReference(contentManager));
+					ContentManagers.Add(contentManager);
 				}
 			}
 		}
@@ -132,8 +127,7 @@ namespace Microsoft.Xna.Framework.Content
 				 */
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
-					WeakReference contentRef = ContentManagers[i];
-					if (!contentRef.IsAlive || Object.ReferenceEquals(contentRef.Target, contentManager))
+					if (Object.ReferenceEquals(ContentManagers[i], contentManager))
 					{
 						ContentManagers.RemoveAt(i);
 					}
@@ -154,18 +148,10 @@ namespace Microsoft.Xna.Framework.Content
 				 */
 				for (int i = ContentManagers.Count - 1; i >= 0; i -= 1)
 				{
-					WeakReference contentRef = ContentManagers[i];
-					if (contentRef.IsAlive)
+					ContentManager contentManager = ContentManagers[i];
+					if (contentManager != null)
 					{
-						ContentManager contentManager = (ContentManager) contentRef.Target;
-						if (contentManager != null)
-						{
-							contentManager.ReloadGraphicsAssets();
-						}
-					}
-					else
-					{
-						ContentManagers.RemoveAt(i);
+						contentManager.ReloadGraphicsAssets();
 					}
 				}
 			}
