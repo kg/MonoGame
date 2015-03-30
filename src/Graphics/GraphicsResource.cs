@@ -46,8 +46,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		#region Private Variables
 
-		private WeakReference selfReference;
-
 		#endregion
 
 		#region Private Static Variables
@@ -58,8 +56,13 @@ namespace Microsoft.Xna.Framework.Graphics
 		/* Use WeakReference for the global resources list as we do not know when a resource
 		 * may be disposed and collected. We do not want to prevent a resource from being
 		 * collected by holding a strong reference to it in this list.
+         * 
+         */
+
+        /*
+         * unfortunately, no weakrefs in JS! - mispy
 		 */
-		private static List<WeakReference> resources = new List<WeakReference>();
+		private static List<GraphicsResource> resources = new List<GraphicsResource>();
 
 		#endregion
 
@@ -75,8 +78,7 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			lock (resourcesLock)
 			{
-				selfReference = new WeakReference(this);
-				resources.Add(selfReference);
+                resources.Add(this);
 			}
 		}
 
@@ -158,10 +160,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			// Remove from the global list of graphics resources
 			lock (resourcesLock)
 			{
-				resources.Remove(selfReference);
+				resources.Remove(this);
 			}
 
-			selfReference = null;
+			//selfReference = null;
 			GraphicsDevice = null;
 			IsDisposed = true;
 			//}
@@ -175,17 +177,13 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			lock (resourcesLock)
 			{
-				foreach (WeakReference resource in resources)
+				foreach (GraphicsResource resource in resources)
 				{
-					object target = resource.Target;
-					if (target != null)
-					{
-						(target as GraphicsResource).GraphicsDeviceResetting();
-					}
+                    resource.GraphicsDeviceResetting();
 				}
 
 				// Remove references to resources that have been garbage collected.
-				resources.RemoveAll(wr => !wr.IsAlive);
+				//resources.RemoveAll(wr => !wr.IsAlive);
 			}
 		}
 
@@ -196,13 +194,9 @@ namespace Microsoft.Xna.Framework.Graphics
 		{
 			lock (resourcesLock)
 			{
-				foreach (WeakReference resource in resources.ToArray())
+				foreach (GraphicsResource resource in resources.ToArray())
 				{
-					object target = resource.Target;
-					if (target != null)
-					{
-						(target as IDisposable).Dispose();
-					}
+				    resource.Dispose();
 				}
 				resources.Clear();
 			}

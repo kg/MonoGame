@@ -1347,6 +1347,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			}
 
 			/* EXT_draw_buffers2 is probably used by nobody. */
+#if !JSIL
 			try
 			{
 				glColorMaskIndexedEXT = (ColorMaskIndexedEXT) Marshal.GetDelegateForFunctionPointer(
@@ -1358,6 +1359,7 @@ namespace Microsoft.Xna.Framework.Graphics
 			{
 				// FIXME: SupportsIndependentWriteMasks? -flibit
 			}
+#endif
 
 #if DEBUG
 			/* ARB_debug_output, for debug contexts */
