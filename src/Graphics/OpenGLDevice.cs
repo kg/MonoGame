@@ -1067,7 +1067,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (sampler.AddressU != texture.texture.WrapS)
 			{
 				texture.texture.WrapS = sampler.AddressU;
-                Console.WriteLine("GL_TEXTURE_WRAP_S");
 				glTexParameteri(
 					texture.texture.Target,
 					GLenum.GL_TEXTURE_WRAP_S,
@@ -1077,7 +1076,6 @@ namespace Microsoft.Xna.Framework.Graphics
 			if (sampler.AddressV != texture.texture.WrapT)
 			{
 				texture.texture.WrapT = sampler.AddressV;
-                Console.WriteLine("GL_TEXTURE_WRAP_T");
 				glTexParameteri(
 					texture.texture.Target,
 					GLenum.GL_TEXTURE_WRAP_T,
@@ -1256,14 +1254,15 @@ namespace Microsoft.Xna.Framework.Graphics
 			int elementCount,
 			SetDataOptions options
 		) where T : struct {
+            BindVertexBuffer(handle);
+
 #if JSIL
             dynamic Document = Builtins.Global["document"];
             dynamic Canvas = Document.getElementById("canvas");
             dynamic gl = Canvas.getContext("webgl");
+
             gl.bufferSubData(gl.ARRAY_BUFFER, offsetInBytes, JSILHelpers.GetBytes(data));
 #else
-            BindVertexBuffer(handle);
-
 			if (options == SetDataOptions.Discard)
 			{
 				glBufferData(
@@ -1469,13 +1468,11 @@ namespace Microsoft.Xna.Framework.Graphics
 				hasMipmaps
 			);
 			BindTexture(result);
-            Console.WriteLine("GL_TEXTURE_WRAP_S");
 			glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_WRAP_S,
 				(int) XNAToGL.Wrap[result.WrapS]
 			);
-            Console.WriteLine("GL_TEXTURE_WRAP_T");
 			glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_WRAP_T,
@@ -1489,19 +1486,16 @@ namespace Microsoft.Xna.Framework.Graphics
 				(int) XNAToGL.Wrap[result.WrapR]
 			);
 #endif
-            Console.WriteLine("GL_TEXTURE_MAG_FILTER");
             glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_MAG_FILTER,
 				(int) XNAToGL.MagFilter[result.Filter]
 			);
-            Console.WriteLine("GL_TEXTURE_MIN_FILTER");
 			glTexParameteri(
 				result.Target,
 				GLenum.GL_TEXTURE_MIN_FILTER,
 				(int) (result.HasMipmaps ? XNAToGL.MinMipFilter[result.Filter] : XNAToGL.MinFilter[result.Filter])
 			);
-            Console.WriteLine("GL_TEXTURE_MAX_ANISOTROPY_EXT");
 			glTexParameterf(
 				result.Target,
 				GLenum.GL_TEXTURE_MAX_ANISOTROPY_EXT,

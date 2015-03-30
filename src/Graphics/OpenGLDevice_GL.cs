@@ -539,9 +539,9 @@ namespace Microsoft.Xna.Framework.Graphics
 
 		private delegate void BufferSubData(
 			GLenum target,
-			IntPtr offset,
-			IntPtr size,
-			IntPtr data
+			int offset,
+			int size,
+			byte[] data
 		);
 		private BufferSubData glBufferSubData;
 
@@ -1043,6 +1043,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glCompressedTexSubImage2D"),
 					typeof(CompressedTexSubImage2D)
 				);
+#if !JSIL
 				glTexImage3D = (TexImage3D) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glTexImage3D"),
 					typeof(TexImage3D)
@@ -1055,6 +1056,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glGetTexImage"),
 					typeof(GetTexImage)
 				);
+#endif
 				glTexParameteri = (TexParameteri) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glTexParameteri"),
 					typeof(TexParameteri)
@@ -1067,10 +1069,12 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glActiveTexture"),
 					typeof(ActiveTexture)
 				);
+#if !JSIL
 				glGetTexLevelParameteriv = (GetTexLevelParameteriv) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glGetTexLevelParameteriv"),
 					typeof(GetTexLevelParameteriv)
 				);
+#endif
 				glPixelStorei = (PixelStorei) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glPixelStorei"),
 					typeof(PixelStorei)
@@ -1095,6 +1099,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glBufferSubData"),
 					typeof(BufferSubData)
 				);
+#if !JSIL
 				glMapBuffer = (MapBuffer) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glMapBuffer"),
 					typeof(MapBuffer)
@@ -1103,6 +1108,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glUnmapBuffer"),
 					typeof(UnmapBuffer)
 				);
+#endif
 				glEnableVertexAttribArray = (EnableVertexAttribArray) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glEnableVertexAttribArray"),
 					typeof(EnableVertexAttribArray)
@@ -1151,6 +1157,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glDrawArrays"),
 					typeof(DrawArrays)
 				);
+#if !JSIL
 				glGenQueries = (GenQueries) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glGenQueries"),
 					typeof(GenQueries)
@@ -1171,6 +1178,7 @@ namespace Microsoft.Xna.Framework.Graphics
 					SDL.SDL_GL_GetProcAddress("glGetQueryObjectiv"),
 					typeof(GetQueryObjectiv)
 				);
+#endif
 				glCreateShader = (CreateShader) Marshal.GetDelegateForFunctionPointer(
 					SDL.SDL_GL_GetProcAddress("glCreateShader"),
 					typeof(CreateShader)
@@ -1353,6 +1361,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 #if DEBUG
 			/* ARB_debug_output, for debug contexts */
+#if !JSIL
 			IntPtr messageCallback = SDL.SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
 			IntPtr messageControl = SDL.SDL_GL_GetProcAddress("glDebugMessageControlARB");
 			if (messageCallback == IntPtr.Zero || messageControl == IntPtr.Zero)
@@ -1402,7 +1411,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				);
 			}
 #endif
-		}
+
+#endif
+        }
 
 		private IntPtr TryGetFramebufferEP(string ep)
 		{
