@@ -874,13 +874,9 @@ namespace Microsoft.Xna.Framework.Graphics
 						)
 					);
                     var k = (i * 4) + j;
-                    // JSIL HACK
-                    vertexInfo[k].Position = new Vector3(position.X, position.Y, info.depth);
-                    /*
 					vertexInfo[k].Position.X = position.X;
 					vertexInfo[k].Position.Y = position.Y;
 					vertexInfo[k].Position.Z = info.depth;
-                     */
 					vertexInfo[k].Color = info.color;
 					vertexInfo[k].TextureCoordinate = Vector2.Add(
 						Vector2.Multiply(
