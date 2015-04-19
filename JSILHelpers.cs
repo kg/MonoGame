@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Xna.Framework.Graphics {
     public static class JSILHelpers {
-        // will be proxied out
-        public static T[] GetBytes<T>(T[] data)
-            where T : struct {
-            return data;
+        internal static void BufferSubData (string p, int elementSizeInBytes, int offsetInBytes, Array data, int startIndex, int elementCount) {
+            throw new NotImplementedException();
         }
     }
 }

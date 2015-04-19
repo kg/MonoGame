@@ -1257,11 +1257,7 @@ namespace Microsoft.Xna.Framework.Graphics
             BindVertexBuffer(handle);
 
 #if JSIL
-            dynamic Document = Builtins.Global["document"];
-            dynamic Canvas = Document.getElementById("canvas");
-            dynamic gl = Canvas.getContext("webgl");
-
-            gl.bufferSubData(gl.ARRAY_BUFFER, offsetInBytes, JSILHelpers.GetBytes(data));
+            JSILHelpers.BufferSubData("ARRAY_BUFFER", elementSizeInBytes, offsetInBytes, data, startIndex, elementCount);
 #else
 			if (options == SetDataOptions.Discard)
 			{
@@ -1296,11 +1292,10 @@ namespace Microsoft.Xna.Framework.Graphics
 			int elementCount,
 			SetDataOptions options
 		) where T : struct {
+			int elementSizeInBytes = Marshal.SizeOf(typeof(T));
+
 #if JSIL
-            dynamic Document = Builtins.Global["document"];
-            dynamic Canvas = Document.getElementById("canvas");
-            dynamic gl = Canvas.getContext("webgl");
-            gl.bufferSubData(gl.ELEMENT_ARRAY_BUFFER, offsetInBytes, data);
+            JSILHelpers.BufferSubData("ELEMENT_ARRAY_BUFFER", elementSizeInBytes, offsetInBytes, data, startIndex, elementCount);
 #else
 			BindIndexBuffer(handle);
 
@@ -1316,7 +1311,6 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			GCHandle dataHandle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
-			int elementSizeInBytes = Marshal.SizeOf(typeof(T));
 			glBufferSubData(
 				GLenum.GL_ELEMENT_ARRAY_BUFFER,
 				(IntPtr) offsetInBytes,

@@ -873,11 +873,16 @@ namespace Microsoft.Xna.Framework.Graphics
 							destination
 						)
 					);
-					vertexInfo[(i * 4) + j].Position.X = position.X;
-					vertexInfo[(i * 4) + j].Position.Y = position.Y;
-					vertexInfo[(i * 4) + j].Position.Z = info.depth;
-					vertexInfo[(i * 4) + j].Color = info.color;
-					vertexInfo[(i * 4) + j].TextureCoordinate = Vector2.Add(
+                    var k = (i * 4) + j;
+                    // JSIL HACK
+                    vertexInfo[k].Position = new Vector3(position.X, position.Y, info.depth);
+                    /*
+					vertexInfo[k].Position.X = position.X;
+					vertexInfo[k].Position.Y = position.Y;
+					vertexInfo[k].Position.Z = info.depth;
+                     */
+					vertexInfo[k].Color = info.color;
+					vertexInfo[k].TextureCoordinate = Vector2.Add(
 						Vector2.Multiply(
 							SpriteInfo.CornerOffsets[j ^ (info.effects & 0x3)],
 							sourceSize
