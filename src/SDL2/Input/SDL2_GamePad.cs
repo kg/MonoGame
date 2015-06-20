@@ -122,6 +122,7 @@ namespace Microsoft.Xna.Framework.Input
 		};
 
 		// We use this to get left/right support on OSX via a nice driver workaround!
+#if !JSIL
 		private static ushort[] leftRightMacHackData = {0, 0};
 		private static GCHandle leftRightMacHackPArry = GCHandle.Alloc(leftRightMacHackData, GCHandleType.Pinned);
 		private static IntPtr leftRightMacHackPtr = leftRightMacHackPArry.AddrOfPinnedObject();
@@ -138,7 +139,7 @@ namespace Microsoft.Xna.Framework.Input
 				data = leftRightMacHackPtr
 			}
 		};
-
+#endif
 		// Where we will load our config file into.
 		private static MonoGameJoystickConfig INTERNAL_joystickConfig;
 
@@ -192,13 +193,15 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			if (INTERNAL_haptics[which] != IntPtr.Zero)
 			{
+#if !JSIL
 				if (	Game.Instance.Platform.OSVersion.Equals("Mac OS X") &&
 					SDL.SDL_HapticEffectSupported(INTERNAL_haptics[which], ref INTERNAL_leftRightMacHackEffect) == 1	)
 				{
 					INTERNAL_hapticTypes[which] = HapticType.LeftRightMacHack;
 					SDL.SDL_HapticNewEffect(INTERNAL_haptics[which], ref INTERNAL_leftRightMacHackEffect);
 				}
-				else if (	!Game.Instance.Platform.OSVersion.Equals("Mac OS X") &&
+#endif
+				if (	!Game.Instance.Platform.OSVersion.Equals("Mac OS X") &&
 						SDL.SDL_HapticEffectSupported(INTERNAL_haptics[which], ref INTERNAL_leftRightEffect) == 1	)
 				{
 					INTERNAL_hapticTypes[which] = HapticType.LeftRight;
@@ -978,6 +981,7 @@ namespace Microsoft.Xna.Framework.Input
 			}
 			else if (type == HapticType.LeftRightMacHack)
 			{
+#if !JSIL
 				leftRightMacHackData[0] = (ushort) (65535.0f * leftMotor);
 				leftRightMacHackData[1] = (ushort) (65535.0f * rightMotor);
 				SDL.SDL_HapticUpdateEffect(
@@ -990,6 +994,7 @@ namespace Microsoft.Xna.Framework.Input
 					0,
 					1
 				);
+#endif
 			}
 			else
 			{
