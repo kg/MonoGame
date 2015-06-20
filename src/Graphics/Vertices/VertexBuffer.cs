@@ -207,7 +207,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new InvalidOperationException("The array is not the correct size for the amount of data requested.");
 			}
 
+#if !JSIL
 			Threading.ForceToMainThread(() =>
+#endif
 				GraphicsDevice.GLDevice.GetVertexBufferData(
 					Handle,
 					offsetInBytes,
@@ -216,7 +218,11 @@ namespace Microsoft.Xna.Framework.Graphics
 					elementCount,
 					vertexStride
 				)
+#if JSIL
+            ;
+#else
 			);
+#endif
 		}
 
 		#endregion
@@ -326,7 +332,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				);
 			}
 
+#if !JSIL
 			Threading.ForceToMainThread(() =>
+#endif
 				GraphicsDevice.GLDevice.SetVertexBufferData(
 					Handle,
 					elementSizeInBytes,
@@ -336,7 +344,12 @@ namespace Microsoft.Xna.Framework.Graphics
 					elementCount,
 					options
 				)
+#if JSIL
+            ;
+#else
 			);
+#endif
+
 		}
 
 		#endregion

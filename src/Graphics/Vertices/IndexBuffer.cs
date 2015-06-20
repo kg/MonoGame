@@ -203,7 +203,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				);
 			}
 
+#if !JSIL
 			Threading.ForceToMainThread(() =>
+#endif
 				GraphicsDevice.GLDevice.GetIndexBufferData(
 					Handle,
 					offsetInBytes,
@@ -211,7 +213,11 @@ namespace Microsoft.Xna.Framework.Graphics
 					startIndex,
 					elementCount
 				)
+#if JSIL
+            ;
+#else
 			);
+#endif
 		}
 
 		#endregion
@@ -292,7 +298,9 @@ namespace Microsoft.Xna.Framework.Graphics
 				throw new InvalidOperationException("The array specified in the data parameter is not the correct size for the amount of data requested.");
 			}
 
+#if !JSIL
 			Threading.ForceToMainThread(() =>
+#endif
 				GraphicsDevice.GLDevice.SetIndexBufferData(
 					Handle,
 					offsetInBytes,
@@ -301,7 +309,12 @@ namespace Microsoft.Xna.Framework.Graphics
 					elementCount,
 					options
 				)
+#if JSIL
+            ;
+#else
 			);
+#endif
+
 		}
 
 		#endregion
