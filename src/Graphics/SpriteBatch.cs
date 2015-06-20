@@ -892,7 +892,7 @@ namespace Microsoft.Xna.Framework.Graphics
 
 			if (customEffect != null)
 			{
-				foreach (EffectPass pass in customEffect.CurrentTechnique.Passes)
+				foreach (EffectPass pass in customEffect.CurrentTechnique.Passes._passes)
 				{
 					pass.Apply();
 					GraphicsDevice.DrawIndexedPrimitives(

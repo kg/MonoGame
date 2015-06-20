@@ -4,7 +4,7 @@ namespace Microsoft.Xna.Framework.Graphics
 {
     public class EffectPassCollection : IEnumerable<EffectPass>
     {
-		private readonly EffectPass[] _passes;
+		internal readonly EffectPass[] _passes;
 
         internal EffectPassCollection(EffectPass [] passes)
         {
