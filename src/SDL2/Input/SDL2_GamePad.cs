@@ -169,13 +169,13 @@ namespace Microsoft.Xna.Framework.Input
 			// We use this when dealing with Haptic/GUID initialization.
 			IntPtr thisJoystick;
 
-            // HACK: Compensate for emscripten sdl2 bug
-#if !JSIL
 			// Initialize either a GameController or a Joystick.
-			INTERNAL_isGameController[which] = SDL.SDL_IsGameController(which) == SDL.SDL_bool.SDL_TRUE;
-#endif
+            INTERNAL_isGameController[which] = SDL.SDL_IsGameController(which) == SDL.SDL_bool.SDL_TRUE;
 
-			if (INTERNAL_isGameController[which])
+            // HACK: Compensate for emscripten sdl2 bug
+            INTERNAL_isGameController[which] = false;
+            
+            if (INTERNAL_isGameController[which])
 			{
 				INTERNAL_devices[which] = SDL.SDL_GameControllerOpen(which);
 				thisJoystick = SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[which]);
@@ -443,14 +443,114 @@ namespace Microsoft.Xna.Framework.Input
 			else
 			{
 				// Since it doesn't exist, we need to generate the default config.
+#if JSIL
+                INTERNAL_joystickConfig = CreateJSILJoystickConfig();
+#else
 				INTERNAL_joystickConfig = new MonoGameJoystickConfig();
-
                 SaveJoystickConfig(INTERNAL_joystickConfig, osConfigFile);
+#endif
 			}
 		}
 
+#if JSIL
+        private static MonoGameJoystickConfig CreateJSILJoystickConfig () {
+            // http://www.w3.org/TR/gamepad/#remapping
+            return new MonoGameJoystickConfig {
+                BUTTON_A = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 0
+                },
+                BUTTON_B = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 1
+                },
+                BUTTON_X = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 2
+                },
+                BUTTON_Y = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 3
+                },
+
+                SHOULDER_LB = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 4
+                },
+                SHOULDER_RB = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 5
+                },
+
+                // FIXME: How can we make the analog work here?
+                TRIGGER_LT = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 6
+                },
+                TRIGGER_RT = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 7
+                },
+
+                BUTTON_BACK = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 8
+                },
+                BUTTON_START = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 9
+                },
+
+                BUTTON_LSTICK = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 10
+                },
+                BUTTON_RSTICK = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 11
+                },
+
+                DPAD_UP = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 12
+                },
+                DPAD_DOWN = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 13
+                },
+                DPAD_LEFT = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 14
+                },
+                DPAD_RIGHT = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Button,
+                    INPUT_ID = 15
+                },
+
+                AXIS_LX = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Axis,
+                    INPUT_ID = 0
+                },
+                AXIS_LY = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Axis,
+                    INPUT_ID = 1
+                    // FIXME: Invert Y?
+                },
+
+                AXIS_RX = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Axis,
+                    INPUT_ID = 2
+                },
+                AXIS_RY = new MonoGameJoystickValue {
+                    INPUT_TYPE = InputType.Axis,
+                    INPUT_ID = 3
+                    // FIXME: Invert Y?
+                },
+            };
+        }
+#endif
+
         private static void SaveJoystickConfig (MonoGameJoystickConfig config, string osConfigFile) {
-#if !JSIL
             // ... but is our directory even there?
 			string osConfigDir = osConfigFile.Substring(0, osConfigFile.IndexOf("MonoGameJoystick.cfg"));
 			if (!String.IsNullOrEmpty(osConfigDir) && !Directory.Exists(osConfigDir))
@@ -465,7 +565,6 @@ namespace Microsoft.Xna.Framework.Input
 				XmlSerializer serializer = new XmlSerializer(typeof(MonoGameJoystickConfig));
 				serializer.Serialize(fileOut, INTERNAL_joystickConfig);
 			}
-#endif
         }
 
 		#endregion
