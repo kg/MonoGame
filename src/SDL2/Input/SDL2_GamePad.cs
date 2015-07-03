@@ -152,10 +152,8 @@ namespace Microsoft.Xna.Framework.Input
 
 		internal static void INTERNAL_AddInstance(int which)
 		{
-            int nativeWhich = which;
-
 #if JSIL
-            // Compensate for emscripten sdl2 bug
+            // HACK: Compensate for emscripten sdl2 bug
             if (which == -1)
                 which = 0;
 #endif
@@ -171,16 +169,20 @@ namespace Microsoft.Xna.Framework.Input
 			// We use this when dealing with Haptic/GUID initialization.
 			IntPtr thisJoystick;
 
+            // HACK: Compensate for emscripten sdl2 bug
+#if !JSIL
 			// Initialize either a GameController or a Joystick.
-			INTERNAL_isGameController[which] = SDL.SDL_IsGameController(nativeWhich) == SDL.SDL_bool.SDL_TRUE;
+			INTERNAL_isGameController[which] = SDL.SDL_IsGameController(which) == SDL.SDL_bool.SDL_TRUE;
+#endif
+
 			if (INTERNAL_isGameController[which])
 			{
-				INTERNAL_devices[which] = SDL.SDL_GameControllerOpen(nativeWhich);
+				INTERNAL_devices[which] = SDL.SDL_GameControllerOpen(which);
 				thisJoystick = SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[which]);
 			}
 			else
 			{
-				INTERNAL_devices[which] = SDL.SDL_JoystickOpen(nativeWhich);
+				INTERNAL_devices[which] = SDL.SDL_JoystickOpen(which);
 				thisJoystick = INTERNAL_devices[which];
 			}
 

@@ -500,6 +500,7 @@ namespace Microsoft.Xna.Framework
 			 * to perform an update we sleep off the the remaining time to save battery
 			 * life and/or release CPU time to other threads and processes.
 			 */
+#if !JSIL
 			if (IsFixedTimeStep && _accumulatedElapsedTime < TargetElapsedTime)
 			{
 				int sleepTime = (
@@ -514,6 +515,7 @@ namespace Microsoft.Xna.Framework
 
 				goto RetryTick;
 			}
+#endif
 
 			// Do not allow any update to take longer than our maximum.
 			if (_accumulatedElapsedTime > _maxElapsedTime)
