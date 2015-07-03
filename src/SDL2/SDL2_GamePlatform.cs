@@ -500,7 +500,7 @@ namespace Microsoft.Xna.Framework
 			}
 
 			// Also, initialize the MonoGameJoystick.cfg file.
-			//GamePad.INTERNAL_InitMonoGameJoystick();
+			GamePad.INTERNAL_InitMonoGameJoystick();
 		}
 
 		public override bool BeforeUpdate(GameTime gameTime)

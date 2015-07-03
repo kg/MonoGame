@@ -152,6 +152,14 @@ namespace Microsoft.Xna.Framework.Input
 
 		internal static void INTERNAL_AddInstance(int which)
 		{
+            int nativeWhich = which;
+
+#if JSIL
+            // Compensate for emscripten sdl2 bug
+            if (which == -1)
+                which = 0;
+#endif
+
 			if (which > 3)
 			{
 				return; // Ignoring more than 4 controllers.
@@ -164,15 +172,15 @@ namespace Microsoft.Xna.Framework.Input
 			IntPtr thisJoystick;
 
 			// Initialize either a GameController or a Joystick.
-			INTERNAL_isGameController[which] = SDL.SDL_IsGameController(which) == SDL.SDL_bool.SDL_TRUE;
+			INTERNAL_isGameController[which] = SDL.SDL_IsGameController(nativeWhich) == SDL.SDL_bool.SDL_TRUE;
 			if (INTERNAL_isGameController[which])
 			{
-				INTERNAL_devices[which] = SDL.SDL_GameControllerOpen(which);
+				INTERNAL_devices[which] = SDL.SDL_GameControllerOpen(nativeWhich);
 				thisJoystick = SDL.SDL_GameControllerGetJoystick(INTERNAL_devices[which]);
 			}
 			else
 			{
-				INTERNAL_devices[which] = SDL.SDL_JoystickOpen(which);
+				INTERNAL_devices[which] = SDL.SDL_JoystickOpen(nativeWhich);
 				thisJoystick = INTERNAL_devices[which];
 			}
 
@@ -435,22 +443,28 @@ namespace Microsoft.Xna.Framework.Input
 				// Since it doesn't exist, we need to generate the default config.
 				INTERNAL_joystickConfig = new MonoGameJoystickConfig();
 
-				// ... but is our directory even there?
-				string osConfigDir = osConfigFile.Substring(0, osConfigFile.IndexOf("MonoGameJoystick.cfg"));
-				if (!String.IsNullOrEmpty(osConfigDir) && !Directory.Exists(osConfigDir))
-				{
-					// Okay, jeez, we're really starting fresh.
-					Directory.CreateDirectory(osConfigDir);
-				}
-
-				// Now, create the file.
-				using (FileStream fileOut = File.Open(osConfigFile, FileMode.OpenOrCreate))
-				{
-					XmlSerializer serializer = new XmlSerializer(typeof(MonoGameJoystickConfig));
-					serializer.Serialize(fileOut, INTERNAL_joystickConfig);
-				}
+                SaveJoystickConfig(INTERNAL_joystickConfig, osConfigFile);
 			}
 		}
+
+        private static void SaveJoystickConfig (MonoGameJoystickConfig config, string osConfigFile) {
+#if !JSIL
+            // ... but is our directory even there?
+			string osConfigDir = osConfigFile.Substring(0, osConfigFile.IndexOf("MonoGameJoystick.cfg"));
+			if (!String.IsNullOrEmpty(osConfigDir) && !Directory.Exists(osConfigDir))
+			{
+				// Okay, jeez, we're really starting fresh.
+				Directory.CreateDirectory(osConfigDir);
+			}
+
+			// Now, create the file.
+			using (FileStream fileOut = File.Open(osConfigFile, FileMode.OpenOrCreate))
+			{
+				XmlSerializer serializer = new XmlSerializer(typeof(MonoGameJoystickConfig));
+				serializer.Serialize(fileOut, INTERNAL_joystickConfig);
+			}
+#endif
+        }
 
 		#endregion
 
