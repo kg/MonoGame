@@ -12,6 +12,11 @@ using System;
 using System.IO;
 
 using OpenAL;
+#if JSIL
+using JSIL;
+using JSIL.Meta;
+using JSIL.Runtime;
+#endif
 #endregion
 
 namespace Microsoft.Xna.Framework.Audio
@@ -421,6 +426,9 @@ namespace Microsoft.Xna.Framework.Audio
 			}
 
 			// Load it!
+#if JSIL
+            JSILHelpers.alBufferData(INTERNAL_buffer, format, data, data.Length, sampleRate);
+#else
 			AL10.alBufferData(
 				INTERNAL_buffer,
 				format,
@@ -428,6 +436,7 @@ namespace Microsoft.Xna.Framework.Audio
 				(IntPtr) data.Length,
 				(IntPtr) sampleRate
 			);
+#endif
 
 			// Calculate the duration now, after we've unpacked the buffer
 			int bufLen, bits;

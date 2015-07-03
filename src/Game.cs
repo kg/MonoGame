@@ -457,10 +457,10 @@ namespace Microsoft.Xna.Framework
 			BeginRun();
 			_gameTimer = Stopwatch.StartNew();
 
-			/*try
-			{*/
+			try
+			{
 				Platform.RunLoop();
-			/*}
+			}
 			catch (Audio.NoAudioHardwareException)
 			{
 				// FIXME: Should we be catching this here? -flibit
@@ -469,7 +469,7 @@ namespace Microsoft.Xna.Framework
 					"Could not find a suitable audio device. Verify that a sound card is\n" +
 					"installed, and check the driver properties to make sure it is not disabled."
 				);
-			}*/
+			}
 
 			EndRun();
 			DoExiting();

@@ -60,17 +60,19 @@ namespace Microsoft.Xna.Framework.Audio
 			{
 				Instance = new OpenALDevice();
 			}
-			catch(DllNotFoundException e)
+		    catch(DllNotFoundException e)
 			{
 				System.Console.WriteLine("OpenAL not found! Need SDL2-CS.dll.config?");
 				throw e;
 			}
+#if !JSIL
 			catch(Exception)
 			{
 				/* We ignore and device creation exceptions,
 				 * as they are handled down the line with Instance != null
 				 */
 			}
+#endif
 		}
 
 		#endregion

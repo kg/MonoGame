@@ -362,7 +362,7 @@ namespace Microsoft.Xna.Framework.Audio
 					0
 				);
 			}
-
+           
 			AL10.alSourcePlay(INTERNAL_alSource);
 		}
 
